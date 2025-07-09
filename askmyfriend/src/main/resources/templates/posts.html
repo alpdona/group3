@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>맞팔로우 피드 - Daily Log</title>
+  <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+  
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
   <style>
     /* ────────────────────────────────────────────────────────
@@ -17,164 +19,26 @@
        기본 라이트모드
     ──────────────────────────────────────────────────────── */
     html, body {
-      height: 100%;
-      margin: 0; padding: 0;
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
-      color: #333;
-      transition: background 0.2s, color 0.2s;
-    }
-    body {
-      display: flex;
-      flex-direction: row;
-      min-height: 100vh;
-      overflow-x: auto;
-    }
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #333;
+  background-color: #f0f2f5;
+  transition: background 0.2s, color 0.2s;
+}
+
+body {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  overflow-x: auto;
+}
+
 
     /* ────────────────────────────────────────────────────────
        사이드바
     ──────────────────────────────────────────────────────── */
-    .sidebar {
-      width: 220px;
-      background: #fff;
-      border-right: 1px solid #eee;
-      padding: 24px 0 0 0;
-      box-sizing: border-box;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      transition: background 0.2s, color 0.2s;
-    }
-    /* 다크모드 사이드바 */
-    body.dark .sidebar {
-      background: #1a1c1e;
-      border-color: #222;
-    }
-    .sidebar .logo {
-      font-weight: bold;
-      margin-left: 24px;
-      margin-bottom: 32px;
-      font-size: 18px;
-      color: inherit;
-    }
-    .sidebar .user {
-      display: flex;
-      align-items: center;
-      margin-bottom: 32px;
-      margin-left: 24px;
-    }
-    .sidebar .avatar,
-    .sidebar .default-avatar {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      margin-right: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: bold; font-size: 18px;
-      background: linear-gradient(45deg, #667eea, #764ba2);
-      color: white;
-    }
-    .sidebar .avatar img {
-      width: 100%; height: 100%; border-radius: 50%;
-      object-fit: cover;
-    }
-    .sidebar ul {
-      list-style: none; padding: 0; margin: 0 0 4px 24px;
-    }
-    .sidebar ul li {
-      margin-bottom: 20px;
-      color: #333;
-      font-size: 16px;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    /* 🔥 사이드바 링크 밑줄 제거 */
-    .sidebar ul li a {
-      color: inherit;
-      text-decoration: none; /* 밑줄 제거 */
-      transition: color 0.2s;
-    }
-    .sidebar ul li a:hover {
-      color: #4f46e5;
-    }
-    /* 다크모드 사이드바 리스트 */
-    body.dark .sidebar ul li {
-      color: #e6e6e6;
-    }
-    body.dark .sidebar ul li a {
-      color: inherit;
-      text-decoration: none; /* 다크모드에서도 밑줄 제거 */
-    }
-    body.dark .sidebar ul li a:hover {
-      color: #6366f1;
-    }
-    .sidebar ul li:last-child {
-      position: relative; padding-bottom: 4px;
-    }
-    .sidebar ul li:last-child::after {
-      content: "";
-      position: absolute;
-      bottom: 0; left: 0; right: -5px; height: 1px;
-      background: linear-gradient(to right, #e0e0e0 20%, #e0e0e0 80%, transparent);
-    }
-    body.dark .sidebar ul li:last-child::after {
-      background: linear-gradient(to right, #404040 20%, #404040 80%, transparent);
-    }
-    .sidebar .new-post {
-      margin-left: 24px; margin-bottom: 20px;
-      text-decoration: none; /* 새 글 쓰기 링크도 밑줄 제거 */
-      color: #333; font-size: 16px;
-      transition: color 0.2s;
-    }
-    .sidebar .new-post:hover {
-      color: #4f46e5;
-    }
-    body.dark .sidebar .new-post {
-      color: #e6e6e6;
-      text-decoration: none;
-    }
-    body.dark .sidebar .new-post:hover {
-      color: #6366f1;
-    }
-    .sidebar .logout {
-      margin-left: 24px; color: #888; font-size: 16px;
-      cursor: pointer; margin-bottom: 20px;
-      transition: color 0.2s;
-    }
-    .sidebar .logout:hover {
-      color: #4f46e5;
-    }
-    body.dark .sidebar .logout {
-      color: #e6e6e6;
-    }
-    body.dark .sidebar .logout:hover {
-      color: #6366f1;
-    }
-    .toggle-theme {
-      margin-left: 24px;
-      margin-bottom: 20px;
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #888;
-      padding: 0;
-      transition: all 0.2s ease;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-    }
-    .toggle-theme:hover {
-      color: #333;
-    }
-    body.dark .toggle-theme {
-      color: #e6e6e6;
-    }
-    body.dark .toggle-theme:hover {
-      color: #fff;
-    }
 
     /* ────────────────────────────────────────────────────────
        메인 컨텐츠
@@ -535,35 +399,68 @@
 
   <!-- 사이드바 -->
   <div class="sidebar">
-    <div class="logo">Daily Log</div>
-    <div class="user">
-      <div th:if="${currentUser != null and currentUser.profileImg != null}" class="avatar">
-        <img th:src="@{${currentUser.profileImg}}" alt="프로필"/>
-      </div>
-      <div th:if="${currentUser != null and currentUser.profileImg == null}" class="default-avatar"
-           th:text="${currentUser.nickname.substring(0,1)}">?</div>
-      <div th:if="${currentUser == null}" class="default-avatar">?</div>
-      <div>
-        <div th:text="${currentUser != null ? currentUser.nickname : '게스트'}">사용자명</div>
-        <div style="font-size:13px;color:#888;">
-        </div>
-      </div>
+  <div class="logo">AskMyFriend</div>
+  <ul class="nav-menu">
+    <li class="nav-item">
+      <a th:href="@{/}" class="nav-link" data-path="/">
+        <i class="fas fa-home"></i><span>홈</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/posts}" class="nav-link" data-path="/posts">
+        <i class="fas fa-list"></i><span>글 목록</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/notifications}" class="nav-link" data-path="/notifications">
+        <i class="fas fa-bell"></i><span>알림</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/shorts}" class="nav-link" data-path="/shorts">
+        <i class="fas fa-bolt"></i><span>숏폼</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/chat}" class="nav-link" data-path="/chat">
+        <i class="fas fa-comments"></i><span>채팅</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/mypage}" class="nav-link" data-path="/mypage">
+        <i class="fas fa-user"></i><span>내 프로필</span>
+      </a>
+    </li>
+  </ul>
+
+  <button type="button"
+          class="new-post-btn"
+          th:onclick="|location.href='@{/posts/new}'|">
+    새 글쓰기
+  </button>
+
+  <div class="profile-section">
+    <div class="profile-dropdown">
+      <a th:href="@{/mypage}" class="dropdown-link">
+        <i class="fas fa-user"></i><span>내 프로필</span>
+      </a>
+      <a th:href="@{/setting}" class="dropdown-link">
+        <i class="fas fa-cog"></i><span>설정</span>
+      </a>
+      <a th:href="@{/logout}" class="dropdown-link">
+        <i class="fas fa-sign-out-alt"></i><span>로그아웃</span>
+      </a>
     </div>
-    <ul>
-      <li><a th:href="@{/}">홈</a></li>
-      <li><a th:href="@{/posts}">글 목록</a></li>
-      <li><a th:href="@{/notifications}">알림</a></li>
-      <li><a th:href="@{/friends}">친구 목록</a></li>
-      <li><a th:href="@{/chat}">채팅</a></li>
-      <li><a th:href="@{/shorts}">숏폼</a></li>
-      <li><a th:href="@{/subscriptions}">구독 관리</a></li>
-      <li><a th:href="@{/mypage}">내 프로필</a></li>
-      <li><a th:href="@{/setting}">설정</a></li>
-    </ul>
-    <a th:href="@{/posts/new}" class="new-post">새 글 쓰기</a>
-    <div class="logout" onclick="location.href='/logout'">로그아웃</div>
-    <button class="toggle-theme" onclick="toggleTheme()">🌙</button>
+    <div class="profile-display">
+      <img th:src="${user != null and user.profileImg != null ? user.profileImg : '/default-avatar.png'}"
+           alt="프로필 이미지" class="profile-img"/>
+      <span class="profile-name"
+            th:text="${user != null ? user.nickname : '사용자 이름'}">
+        사용자 이름
+      </span>
+    </div>
   </div>
+</div>
 
   <!-- 메인 컨텐츠 -->
   <div class="main-content">
@@ -954,5 +851,36 @@
       }
     }
   </script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const profileDisplay = document.querySelector('.profile-display');
+    const profileSection = document.querySelector('.profile-section');
+
+    if (profileDisplay && profileSection) {
+      profileDisplay.addEventListener('click', () => {
+        profileSection.classList.toggle('show');
+      });
+
+      document.addEventListener('click', function(e) {
+        if (!profileSection.contains(e.target)) {
+          profileSection.classList.remove('show');
+        }
+      });
+    }
+  });
+</script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-link').forEach(link => {
+      const path = link.getAttribute('data-path');
+      if (currentPath === path || currentPath.startsWith(path + "/")) {
+        link.classList.add('active');
+      }
+    });
+  });
+</script>
+  
+  
 </body>
 </html>

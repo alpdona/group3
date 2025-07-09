@@ -41,37 +41,16 @@ public class PostService {
             .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + id));
     }
 
-    // 🔥 수정: 게시물 생성 (작성자 정보 포함)
-    public void createPost(PostDto dto,
-                           MultipartFile imageFile,
-                           MultipartFile videoFile) throws IOException {
-        PostEntity entity = new PostEntity();
-        entity.setContent(dto.getContent());
-        entity.setVisibility(dto.getVisibility());
-        entity.setPlatform(dto.getPlatform());
-        entity.setAccessibility(dto.getAccessibility());
-        entity.setShortForm(Boolean.TRUE.equals(dto.getShortForm()));
-
-        // 이미지 저장
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String imagePath = saveImage(imageFile);
-            entity.setImagePath(imagePath);
-        }
-
-        // 비디오 저장
-        if (videoFile != null && !videoFile.isEmpty()) {
-            String videoPath = saveVideo(videoFile);
-            entity.setVideoPath(videoPath);
-        }
-
-        postRepository.save(entity);
-    }
-
-    // 🔥 추가: 작성자 정보와 함께 게시물 생성
+    // ⭐️ 작성자 정보와 함께 게시물 생성 (통합된 메서드)
     public void createPost(PostDto dto,
                            MultipartFile imageFile,
                            MultipartFile videoFile,
                            Principal principal) throws IOException {
+        
+        System.out.println("=== 게시물 생성 시작 ===");
+        System.out.println("내용: " + dto.getContent());
+        System.out.println("Principal: " + (principal != null ? principal.getName() : "null"));
+        
         PostEntity entity = new PostEntity();
         entity.setContent(dto.getContent());
         entity.setVisibility(dto.getVisibility());
@@ -79,11 +58,54 @@ public class PostService {
         entity.setAccessibility(dto.getAccessibility());
         entity.setShortForm(Boolean.TRUE.equals(dto.getShortForm()));
 
-        // 🔥 중요: 작성자 정보 설정
+        // ⭐️ 중요: 작성자 정보 설정
         if (principal != null) {
             UserEntity currentUser = userService.findByLoginId(principal.getName()).orElse(null);
-            entity.setAuthor(currentUser);
+            if (currentUser != null) {
+                entity.setAuthor(currentUser);
+                System.out.println("작성자 설정 완료: " + currentUser.getNickname() + " (ID: " + currentUser.getUserId() + ")");
+            } else {
+                System.err.println("작성자를 찾을 수 없습니다: " + principal.getName());
+            }
+        } else {
+            System.err.println("Principal이 null입니다 - 로그인 상태 확인 필요");
         }
+
+        // 이미지 저장
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imagePath = saveImage(imageFile);
+            entity.setImagePath(imagePath);
+            System.out.println("이미지 저장: " + imagePath);
+        }
+
+        // 비디오 저장
+        if (videoFile != null && !videoFile.isEmpty()) {
+            String videoPath = saveVideo(videoFile);
+            entity.setVideoPath(videoPath);
+            System.out.println("비디오 저장: " + videoPath);
+        }
+
+        postRepository.save(entity);
+        System.out.println("게시물 저장 완료 - ID: " + entity.getId() + 
+                          ", 작성자: " + (entity.getAuthor() != null ? entity.getAuthor().getNickname() : "null"));
+    }
+
+    // ⭐️ Principal 없는 버전 (호환성을 위해 유지하되 경고 출력)
+    public void createPost(PostDto dto,
+                           MultipartFile imageFile,
+                           MultipartFile videoFile) throws IOException {
+        
+        System.err.println("⚠️ 경고: 작성자 정보 없이 게시물 생성됨 - Principal을 포함한 메서드를 사용하세요");
+        
+        PostEntity entity = new PostEntity();
+        entity.setContent(dto.getContent());
+        entity.setVisibility(dto.getVisibility());
+        entity.setPlatform(dto.getPlatform());
+        entity.setAccessibility(dto.getAccessibility());
+        entity.setShortForm(Boolean.TRUE.equals(dto.getShortForm()));
+
+        // ⭐️ 작성자 정보가 없으므로 null로 저장됨
+        System.err.println("작성자 정보 없음 - author 필드가 null로 저장됩니다");
 
         // 이미지 저장
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -98,6 +120,7 @@ public class PostService {
         }
 
         postRepository.save(entity);
+        System.out.println("게시물 저장 완료 (작성자 없음) - ID: " + entity.getId());
     }
 
     // uploads 폴더에 이미지 쓰기. 반환값: "/uploads/{파일명}"

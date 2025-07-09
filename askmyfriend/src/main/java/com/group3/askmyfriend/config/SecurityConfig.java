@@ -1,5 +1,8 @@
+// src/main/java/com/group3/askmyfriend/config/SecurityConfig.java
 package com.group3.askmyfriend.config;
 
+import com.group3.askmyfriend.service.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,23 +15,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
-import com.group3.askmyfriend.service.CustomUserDetailsService;
 
 @Configuration
-@Order(2) // ★ 사용자용 보안 설정은 두 번째로 적용
+@RequiredArgsConstructor
+@Order(2)
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final AuthenticationFailureHandler customAuthFailureHandler;
-
-    @Autowired
-    public SecurityConfig(CustomUserDetailsService userDetailsService,
-                          AuthenticationFailureHandler customAuthFailureHandler) {
-        this.userDetailsService = userDetailsService;
-        this.customAuthFailureHandler = customAuthFailureHandler;
-    }
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -44,64 +38,54 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain userSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.securityMatcher("/**"); // ✅ 모든 사용자 요청 적용
-
-        // 세션 관리
-        http.sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .sessionFixation().migrateSession()
-                .maximumSessions(1).expiredUrl("/auth/login?expired")
-        );
-
-        // CSRF 비활성화
-        http.csrf(AbstractHttpConfigurer::disable);
-
-        // 인증 프로바이더 등록
-        http.authenticationProvider(userAuthenticationProvider());
-
-        // 권한 설정
-        http.authorizeHttpRequests(auth -> auth
-                // 퍼블릭 리소스
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            // 웹/세션 전용 체인
+            .securityMatcher("/**")
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(sm ->
+                sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            )
+            .authenticationProvider(userAuthenticationProvider())
+            .authorizeHttpRequests(auth -> auth
+                // 공개
                 .requestMatchers(
-                        new AntPathRequestMatcher("/"),
-                        new AntPathRequestMatcher("/auth/login"),
-                        new AntPathRequestMatcher("/auth/signup"),
-                        new AntPathRequestMatcher("/auth/find-password"),
-                        new AntPathRequestMatcher("/auth/send-code"),
-                        new AntPathRequestMatcher("/auth/verify-code"),
-                        new AntPathRequestMatcher("/auth/reset-password"),
-                        new AntPathRequestMatcher("/css/**"),
-                        new AntPathRequestMatcher("/js/**"),
-                        new AntPathRequestMatcher("/images/**"),
-                        new AntPathRequestMatcher("/error/**"),
-                        new AntPathRequestMatcher("/api/auth/**")
+                    "/",
+                    "/auth/login", "/auth/loginProc", "/auth/signup",
+                    "/auth/find-password", "/auth/send-code", "/auth/verify-code", "/auth/reset-password",
+                    "/css/**", "/js/**", "/images/**", "/error/**"
                 ).permitAll()
-                // 신고 등록 API는 인증 없이 허용
-                .requestMatchers(HttpMethod.POST, "/reports").permitAll()
-                // 관리자 전용 페이지/API
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                // 기타 나머지 요청은 인증 필요
-                .anyRequest().authenticated()
-        );
 
-        // 로그인 폼
-        http.formLogin(form -> form
+                // 세션 기반으로 보호할 API (팔로우)
+                .requestMatchers(HttpMethod.GET,    "/api/follow/**").authenticated()
+                .requestMatchers(HttpMethod.POST,   "/api/follow/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/follow/**").authenticated()
+
+                // 웹 뷰 보호
+                .requestMatchers("/friends/**", "/friend-management/**").authenticated()
+                .requestMatchers("/setting/change-passwordProc").authenticated()
+
+                // 관리자
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                // 그 외
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
                 .loginPage("/auth/login")
                 .loginProcessingUrl("/auth/loginProc")
                 .usernameParameter("loginId")
                 .passwordParameter("password")
                 .defaultSuccessUrl("/index", true)
                 .failureHandler(customAuthFailureHandler)
-        );
-
-        // 로그아웃
-        http.logout(logout -> logout
+            )
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/auth/login")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
-        );
+            );
 
         return http.build();
     }
